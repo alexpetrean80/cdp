@@ -13,7 +13,8 @@ func isHiddenDir(dir string) bool {
 }
 
 func findProjects(rootDir string) ([]string, error) {
-	projects := []string{} entries, err := os.ReadDir(rootDir)
+	projects := []string{}
+  entries, err := os.ReadDir(rootDir)
 
 	if err != nil {
 		return nil, err
