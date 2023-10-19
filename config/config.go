@@ -17,7 +17,7 @@ type Config struct {
 
 func New() (*Config, error) {
 	conf := &Config{}
-	file, err := os.Open(fmt.Sprintf("%s/.config/cdp.yaml", os.Getenv("HOME")))
+	file, err := os.Open(fmt.Sprintf("%s/.config/cdp/config.yaml", os.Getenv("HOME")))
 	if err != nil {
 		return nil, err
 	}
