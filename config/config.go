@@ -30,7 +30,6 @@ func New() (*Config, error) {
 	return conf, nil
 }
 
-
 func (c Config) Dirs() []string {
 	homeDir := os.Getenv("HOME")
 	res := []string{}
@@ -39,4 +38,8 @@ func (c Config) Dirs() []string {
 	}
 
 	return res
+}
+
+func (c Config) Markers() []string {
+  return c.Source.ProjectMarkers
 }
