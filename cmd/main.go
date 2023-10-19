@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"sync"
 
 	"github.com/alexpetrean80/cdp/config"
@@ -12,7 +14,6 @@ import (
 )
 
 func main() {
-
 	config, err := config.New()
 
 	if err != nil {
@@ -27,6 +28,23 @@ func main() {
 	}
 
 	fmt.Print(projectPath)
+	err = os.Chdir(projectPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := spawnShell(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func spawnShell() error {
+	shell := exec.Command(os.Getenv("SHELL"))
+	shell.Stdin = os.Stdin
+	shell.Stdout = os.Stdout
+	shell.Stderr = os.Stderr
+
+	return shell.Run()
 }
 
 func findProjects(config *config.Config) <-chan string {
@@ -50,7 +68,7 @@ func findProjects(config *config.Config) <-chan string {
 		}
 	}()
 
-  return ch
+	return ch
 }
 
 func fzfProjectPath(ch <-chan string) (string, error) {
