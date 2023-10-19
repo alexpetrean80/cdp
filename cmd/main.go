@@ -10,24 +10,35 @@ import (
 	"github.com/alexpetrean80/cdp/config"
 	"github.com/alexpetrean80/cdp/project"
 	"github.com/ktr0731/go-fuzzyfinder"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/sync/errgroup"
 )
 
 func main() {
+	app := &cli.App{
+		Name:  "cdp",
+		Usage: "Move between projects seamlessly",
+		Action: run,
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run(ctx *cli.Context) error {
 	config, err := config.New()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	ch := findProjects(config)
 	projectPath, err := fzfProjectPath(ch)
 
 	if err != nil {
-		log.Fatal(err)
 	}
 
-	fmt.Print(projectPath)
 	err = os.Chdir(projectPath)
 	if err != nil {
 		log.Fatal(err)
