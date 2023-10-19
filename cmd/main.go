@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/alexpetrean80/cdp/config"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"golang.org/x/sync/errgroup"
 )
@@ -13,40 +14,7 @@ func isHiddenDir(dir string) bool {
 	return dir[0] == '.'
 }
 
-func findProjects(rootDir string) ([]string, error) {
-	projects := []string{}
-	entries, err := os.ReadDir(rootDir)
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, entry := range entries {
-		entryName := entry.Name()
-
-		if !entry.IsDir() {
-			continue
-		}
-
-		if isHiddenDir(entryName) {
-			if entryName == ".git" {
-				projects = append(projects, rootDir)
-				return projects, nil
-			} else {
-				continue
-			}
-		}
-
-		subProjects, err := findProjects(fmt.Sprintf("%s/%s", rootDir, entryName))
-		if err != nil {
-			return nil, err
-		}
-		projects = append(projects, subProjects...)
-	}
-	return projects, err
-}
-
-func findProjectsPar(rootDir string, ch chan string, g *errgroup.Group) error {
+func findProjects(rootDir string, ch chan string, g *errgroup.Group) error {
 	entries, err := os.ReadDir(rootDir)
 	if err != nil {
 		return err
@@ -64,7 +32,7 @@ func findProjectsPar(rootDir string, ch chan string, g *errgroup.Group) error {
 			}
 		} else {
 			g.Go(func() error {
-				return findProjectsPar(fmt.Sprintf("%s/%s", rootDir, entryName), ch, g)
+				return findProjects(fmt.Sprintf("%s/%s", rootDir, entryName), ch, g)
 			})
 		}
 	}
@@ -74,17 +42,20 @@ func findProjectsPar(rootDir string, ch chan string, g *errgroup.Group) error {
 func main() {
 	g := new(errgroup.Group)
 
-	rootDir := "/Users/alexp/Repos"
-	// projects, err := findProjects(rootDir)
-	//
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	config, err := config.New()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 	ch := make(chan string, 10)
 
-	g.Go(func() error {
-		return findProjectsPar(rootDir, ch, g)
-	})
+	for _, dir := range config.Dirs() {
+		g.Go(func(rootDir string) func() error {
+			return func() error {
+				return findProjects(rootDir, ch, g)
+			}
+		}(dir))
+	}
 
 	projects := []string{}
 
@@ -99,7 +70,7 @@ func main() {
 	for {
 		proj, ok := <-ch
 		if !ok {
-			break // channel closed
+			break
 		}
 		projects = append(projects, proj)
 	}
