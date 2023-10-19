@@ -3,41 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"sync"
 
 	"github.com/alexpetrean80/cdp/config"
+	"github.com/alexpetrean80/cdp/project"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"golang.org/x/sync/errgroup"
 )
-
-func isHiddenDir(dir string) bool {
-	return dir[0] == '.'
-}
-
-func findProjects(rootDir string, ch chan string, g *errgroup.Group) error {
-	entries, err := os.ReadDir(rootDir)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		entryName := entry.Name()
-		if !entry.IsDir() {
-			continue
-		}
-
-		if isHiddenDir(entryName) {
-			if entryName == ".git" {
-				ch <- rootDir
-			}
-		} else {
-			g.Go(func() error {
-				return findProjects(fmt.Sprintf("%s/%s", rootDir, entryName), ch, g)
-			})
-		}
-	}
-	return nil
-}
 
 func main() {
 	g := new(errgroup.Group)
@@ -50,14 +22,13 @@ func main() {
 	ch := make(chan string, 10)
 
 	for _, dir := range config.Dirs() {
+		pf := project.New(dir, config.Markers(), ch, g)
 		g.Go(func(rootDir string) func() error {
 			return func() error {
-				return findProjects(rootDir, ch, g)
+				return pf.Find()
 			}
 		}(dir))
 	}
-
-	projects := []string{}
 
 	go func() {
 		defer close(ch)
@@ -67,22 +38,40 @@ func main() {
 		}
 	}()
 
-	for {
-		proj, ok := <-ch
-		if !ok {
-			break
+	mtx := new(sync.Mutex)
+	projects := []string{}
+	go func() {
+		for {
+			proj, ok := <-ch
+			if !ok {
+				break
+			}
+      mtx.Lock()
+			projects = append(projects, proj)
+      mtx.Unlock()
 		}
-		projects = append(projects, proj)
-	}
+	}()
 
-	projId, err := fuzzyfinder.Find(
-		projects, func(i int) string {
-			return projects[i]
-		})
+	projectPath, err := fzfProjectPath(&projects, mtx)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(projects[projId])
+	fmt.Print(projectPath)
+}
+
+func fzfProjectPath(projects *[]string, mtx sync.Locker) (string, error) {
+	projId, err := fuzzyfinder.Find(
+		projects, func(i int) string {
+			return (*projects)[i]
+		},
+		fuzzyfinder.WithHotReloadLock(mtx),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return (*projects)[projId], nil
 }
