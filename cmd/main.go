@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/ktr0731/go-fuzzyfinder"
+	"golang.org/x/sync/errgroup"
 )
 
 func isHiddenDir(dir string) bool {
@@ -14,7 +15,7 @@ func isHiddenDir(dir string) bool {
 
 func findProjects(rootDir string) ([]string, error) {
 	projects := []string{}
-  entries, err := os.ReadDir(rootDir)
+	entries, err := os.ReadDir(rootDir)
 
 	if err != nil {
 		return nil, err
@@ -45,11 +46,62 @@ func findProjects(rootDir string) ([]string, error) {
 	return projects, err
 }
 
-func main() {
-	rootDir := "/Users/alexp/Repos"
-	projects, err := findProjects(rootDir)
+func findProjectsPar(rootDir string, ch chan string, g *errgroup.Group) error {
+	entries, err := os.ReadDir(rootDir)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+
+	for _, entry := range entries {
+		entryName := entry.Name()
+		if !entry.IsDir() {
+			continue
+		}
+
+		if isHiddenDir(entryName) {
+			if entryName == ".git" {
+				ch <- rootDir
+			}
+		} else {
+			g.Go(func() error {
+				return findProjectsPar(fmt.Sprintf("%s/%s", rootDir, entryName), ch, g)
+			})
+		}
+	}
+	return nil
+}
+
+func main() {
+	g := new(errgroup.Group)
+
+	rootDir := "/Users/alexp/Repos"
+	// projects, err := findProjects(rootDir)
+	//
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	ch := make(chan string, 10)
+
+	g.Go(func() error {
+		return findProjectsPar(rootDir, ch, g)
+	})
+
+	projects := []string{}
+
+	go func() {
+		defer close(ch)
+
+		if err := g.Wait(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	for {
+		proj, ok := <-ch
+		if !ok {
+			break // channel closed
+		}
+		projects = append(projects, proj)
 	}
 
 	projId, err := fuzzyfinder.Find(

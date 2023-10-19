@@ -2,6 +2,8 @@ module github.com/alexpetrean80/cdp
 
 go 1.21.3
 
+require golang.org/x/sync v0.4.0
+
 require (
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.5.3 // indirect
