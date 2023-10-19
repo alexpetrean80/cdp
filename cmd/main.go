@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/alexpetrean80/cdp/config"
@@ -16,18 +18,29 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "cdp",
-		Usage: "Move between projects seamlessly",
+		Name:                   "cdp",
+		UseShortOptionHandling: true,
+		Usage:                  "Move between projects seamlessly",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    "open",
-				Aliases: []string{"o"},
-				Usage:   "Open the project in the configured editor.",
+				Name:    "edit",
+				Aliases: []string{"e"},
+				Usage:   "Open the project in the configured editor. (mutually exclusive with -t)",
 			},
 			&cli.BoolFlag{
 				Name:    "browser",
 				Aliases: []string{"b"},
-				Usage:   "Open the project in the browser. (github-cli required)",
+				Usage:   "Open the project in the browser. github-cli required",
+			},
+			&cli.BoolFlag{
+				Name:    "latest",
+				Aliases: []string{"l"},
+				Usage:   "Open the latest project",
+			},
+			&cli.BoolFlag{
+				Name:    "tmux",
+				Aliases: []string{"t"},
+				Usage:   "Open the project in a new tmux session. (mutually exclusive with -o) tmux required.",
 			},
 		},
 		Action: run,
@@ -45,9 +58,7 @@ func run(ctx *cli.Context) error {
 		return err
 	}
 
-	ch := findProjects(config)
-	projectPath, err := fzfProjectPath(ch)
-
+	projectPath, err := getProjectPath(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -57,13 +68,17 @@ func run(ctx *cli.Context) error {
 		return err
 	}
 
-	if ctx.NumFlags() == 0 {
+	if ctx.NumFlags() == 0 || (ctx.NumFlags() == 2 && ctx.Bool("latest")) {
 		if err := spawnProgram(os.Getenv("SHELL"), nil); err != nil {
 			return err
 		}
 	}
 	if ctx.Bool("open") {
 		if err := spawnProgram(config.Editor, []string{"."}); err != nil {
+			return err
+		}
+	} else if ctx.Bool("tmux") {
+		if err := spawnProgram("tmux", []string{"new", "-s", getProjectName(projectPath)}); err != nil {
 			return err
 		}
 	}
@@ -77,6 +92,35 @@ func run(ctx *cli.Context) error {
 	return nil
 }
 
+func getProjectName(projectPath string) string {
+	split := strings.Split(projectPath, "/")
+	return split[len(split)-1]
+}
+func getProjectPath(ctx *cli.Context, config *config.Config) (string, error) {
+	if ctx.Bool("latest") {
+		projectPath, err := tryGetLatestProject()
+		if err == nil && projectPath != "" {
+			return projectPath, nil
+		}
+	}
+
+	ch := findProjects(config)
+	projectPath, err := fzfProjectPath(ch)
+	if err != nil {
+		return "", err
+	}
+
+	file, err := os.Create(fmt.Sprintf("%s/.config/cdp/latest", os.Getenv("HOME")))
+	if err != nil {
+		return "", err
+	}
+	_, err = file.WriteString(projectPath)
+	if err != nil {
+		return "", err
+	}
+
+	return projectPath, nil
+}
 
 func spawnProgram(executable string, args []string) error {
 	cmd := exec.Command(executable, args...)
@@ -137,4 +181,17 @@ func fzfProjectPath(ch <-chan string) (string, error) {
 	}
 
 	return (projects)[projId], nil
+}
+
+func tryGetLatestProject() (string, error) {
+	file, err := os.Open(fmt.Sprintf("%s/.config/cdp/latest", os.Getenv("HOME")))
+	if err != nil {
+		return "", err
+	}
+
+	project, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+	return string(project), nil
 }
