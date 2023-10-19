@@ -18,6 +18,18 @@ func main() {
 	app := &cli.App{
 		Name:  "cdp",
 		Usage: "Move between projects seamlessly",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "open",
+				Aliases: []string{"o"},
+				Usage:   "Open the project in the configured editor.",
+			},
+			&cli.BoolFlag{
+				Name:    "browser",
+				Aliases: []string{"b"},
+				Usage:   "Open the project in the browser. (github-cli required)",
+			},
+		},
 		Action: run,
 	}
 
@@ -37,25 +49,41 @@ func run(ctx *cli.Context) error {
 	projectPath, err := fzfProjectPath(ch)
 
 	if err != nil {
+		return err
 	}
 
 	err = os.Chdir(projectPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := spawnShell(); err != nil {
-		log.Fatal(err)
+	if ctx.NumFlags() == 0 {
+		if err := spawnProgram(os.Getenv("SHELL"), nil); err != nil {
+			return err
+		}
 	}
+	if ctx.Bool("open") {
+		if err := spawnProgram(config.Editor, []string{"."}); err != nil {
+			return err
+		}
+	}
+	if ctx.Bool("browser") {
+		fmt.Println("open in browser")
+		if err := exec.Command("gh", "repo", "view", "--web").Run(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func spawnShell() error {
-	shell := exec.Command(os.Getenv("SHELL"))
-	shell.Stdin = os.Stdin
-	shell.Stdout = os.Stdout
-	shell.Stderr = os.Stderr
 
-	return shell.Run()
+func spawnProgram(executable string, args []string) error {
+	cmd := exec.Command(executable, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func findProjects(config *config.Config) <-chan string {
