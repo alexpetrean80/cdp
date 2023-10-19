@@ -12,13 +12,25 @@ import (
 )
 
 func main() {
-	g := new(errgroup.Group)
 
 	config, err := config.New()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	ch := findProjects(config)
+	projectPath, err := fzfProjectPath(ch)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(projectPath)
+}
+
+func findProjects(config *config.Config) <-chan string {
+	g := new(errgroup.Group)
 	ch := make(chan string, 10)
 
 	for _, dir := range config.Dirs() {
@@ -38,6 +50,10 @@ func main() {
 		}
 	}()
 
+  return ch
+}
+
+func fzfProjectPath(ch <-chan string) (string, error) {
 	mtx := new(sync.Mutex)
 	projects := []string{}
 	go func() {
@@ -46,25 +62,15 @@ func main() {
 			if !ok {
 				break
 			}
-      mtx.Lock()
+			mtx.Lock()
 			projects = append(projects, proj)
-      mtx.Unlock()
+			mtx.Unlock()
 		}
 	}()
 
-	projectPath, err := fzfProjectPath(&projects, mtx)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Print(projectPath)
-}
-
-func fzfProjectPath(projects *[]string, mtx sync.Locker) (string, error) {
 	projId, err := fuzzyfinder.Find(
-		projects, func(i int) string {
-			return (*projects)[i]
+		&projects, func(i int) string {
+			return (projects)[i]
 		},
 		fuzzyfinder.WithHotReloadLock(mtx),
 	)
@@ -73,5 +79,5 @@ func fzfProjectPath(projects *[]string, mtx sync.Locker) (string, error) {
 		return "", err
 	}
 
-	return (*projects)[projId], nil
+	return (projects)[projId], nil
 }
