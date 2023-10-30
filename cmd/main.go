@@ -52,13 +52,13 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	config, err := config.New()
+	c, err := config.New()
 
 	if err != nil {
 		return err
 	}
 
-	projectPath, err := getProjectPath(ctx, config)
+	projectPath, err := getProjectPath(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -69,16 +69,16 @@ func run(ctx *cli.Context) error {
 	}
 
 	if ctx.NumFlags() == 0 || (ctx.NumFlags() == 2 && ctx.Bool("latest")) {
-		if err := spawnProgram(os.Getenv("SHELL"), nil); err != nil {
+		if err = spawnProgram(os.Getenv("SHELL"), nil); err != nil {
 			return err
 		}
 	}
 	if ctx.Bool("open") {
-		if err := spawnProgram(config.Editor, []string{"."}); err != nil {
+		if err = spawnProgram(c.Editor, []string{"."}); err != nil {
 			return err
 		}
 	} else if ctx.Bool("tmux") {
-		if err := spawnProgram("tmux", []string{"new", "-s", getProjectName(projectPath)}); err != nil {
+		if err = spawnProgram("tmux", []string{"new", "-s", getProjectName(projectPath)}); err != nil {
 			return err
 		}
 	}
@@ -156,7 +156,7 @@ func findProjects(config *config.Config) <-chan string {
 
 func fzfProjectPath(ch <-chan string) (string, error) {
 	mtx := new(sync.Mutex)
-	projects := []string{}
+	var projects []string
 	go func() {
 		for {
 			proj, ok := <-ch
@@ -189,9 +189,9 @@ func tryGetLatestProject() (string, error) {
 		return "", err
 	}
 
-	project, err := io.ReadAll(file)
+	proj, err := io.ReadAll(file)
 	if err != nil {
 		return "", err
 	}
-	return string(project), nil
+	return string(proj), nil
 }

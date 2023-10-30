@@ -32,7 +32,7 @@ func New() (*Config, error) {
 
 func (c Config) Dirs() []string {
 	homeDir := os.Getenv("HOME")
-	res := []string{}
+	var res []string
 	for _, dir := range c.Source.Dirs {
 		res = append(res, fmt.Sprintf("%s/%s", homeDir, dir))
 	}
@@ -41,5 +41,5 @@ func (c Config) Dirs() []string {
 }
 
 func (c Config) Markers() []string {
-  return c.Source.ProjectMarkers
+	return c.Source.ProjectMarkers
 }
