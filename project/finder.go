@@ -9,15 +9,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type ProjectFinder struct {
+type Finder struct {
 	RootDir string
 	Markers map[string]bool
 	ResCh   chan string
 	Group   *errgroup.Group
 }
 
-func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group) *ProjectFinder {
-	pf := ProjectFinder{}
+func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group) *Finder {
+	pf := Finder{}
 	pf.RootDir = rootDir
 
 	pf.Markers = make(map[string]bool)
@@ -31,11 +31,11 @@ func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group)
 	return &pf
 }
 
-func (pf ProjectFinder) Find() error {
+func (pf Finder) Find() error {
 	return pf.findRec(pf.RootDir)
 }
 
-func (pf ProjectFinder) findRec(rootDir string) error {
+func (pf Finder) findRec(rootDir string) error {
 	entries, err := os.ReadDir(rootDir)
 	if err != nil {
 		return err
