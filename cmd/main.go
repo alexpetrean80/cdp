@@ -57,7 +57,6 @@ func run(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
 	projectPath, err := getProjectPath(ctx, c)
 	if err != nil {
 		return err
