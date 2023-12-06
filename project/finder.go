@@ -11,7 +11,7 @@ import (
 
 type Finder struct {
 	RootDir string
-	Markers map[string]bool
+	Markers map[string]struct{}
 	ResCh   chan string
 	Group   *errgroup.Group
 }
@@ -20,9 +20,9 @@ func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group)
 	pf := Finder{}
 	pf.RootDir = rootDir
 
-	pf.Markers = make(map[string]bool)
+	pf.Markers = make(map[string]struct{})
 	for _, marker := range markers {
-		pf.Markers[marker] = true
+		pf.Markers[marker] = struct{}{}
 	}
 
 	pf.ResCh = resCh
@@ -44,7 +44,7 @@ func (pf Finder) findRec(rootDir string) error {
 	for _, entry := range entries {
 		entryName := strings.Trim(entry.Name(), "/")
 
-		if pf.Markers[entryName] {
+    if _, ok := pf.Markers[entryName]; ok {
 			pf.ResCh <- rootDir
 			return nil
 		}
