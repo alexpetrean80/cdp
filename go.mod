@@ -4,6 +4,7 @@ go 1.21.3
 
 require (
 	github.com/ktr0731/go-fuzzyfinder v0.7.0
+	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/sync v0.4.0
 )
 
@@ -12,7 +13,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/urfave/cli/v2 v2.25.7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )
