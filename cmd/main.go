@@ -140,7 +140,7 @@ func findProjects() <-chan string {
 	dirs := getDirs()
 	markers := viper.GetStringSlice("source.project_markers")
 	for _, dir := range dirs {
-		pf := project.New(dir, markers, ch, g)
+		pf := project.NewFinder(dir, markers, ch, g)
 		g.Go(func(rootDir string) func() error {
 			return func() error {
 				return pf.Find()
