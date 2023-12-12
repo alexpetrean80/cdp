@@ -11,6 +11,7 @@ import (
 
 	"github.com/alexpetrean80/cdp/project"
 	"github.com/ktr0731/go-fuzzyfinder"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/sync/errgroup"
@@ -137,7 +138,10 @@ func findProjects() <-chan string {
 	g := new(errgroup.Group)
 	ch := make(chan string, 10)
 
-	dirs := getDirs()
+	dirs, err := getDirs()
+  if err != nil {
+    log.Fatal(err)
+  }
 	markers := viper.GetStringSlice("source.project_markers")
 	for _, dir := range dirs {
 		pf := project.NewFinder(dir, markers, ch, g)
@@ -214,13 +218,16 @@ func initConfig() error {
 	return viper.ReadInConfig()
 }
 
-func getDirs() []string {
-	homeDir := os.Getenv("HOME")
+func getDirs() ([]string, error) {
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		return nil, err
+	}
 	var res []string
 
 	for _, dir := range viper.GetStringSlice("source.dirs") {
 		res = append(res, fmt.Sprintf("%s/%s", homeDir, dir))
 	}
 
-	return res
+	return res, nil
 }

@@ -4,6 +4,7 @@ go 1.21.3
 
 require (
 	github.com/ktr0731/go-fuzzyfinder v0.7.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/viper v1.18.1
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/sync v0.5.0
@@ -45,5 +46,5 @@ require (
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 )
