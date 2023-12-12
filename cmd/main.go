@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/alexpetrean80/cdp/config"
 	"github.com/alexpetrean80/cdp/project"
 	"github.com/ktr0731/go-fuzzyfinder"
+	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/sync/errgroup"
 )
@@ -52,12 +52,13 @@ func main() {
 }
 
 func run(ctx *cli.Context) error {
-	c, err := config.New()
-
+	err := initConfig()
 	if err != nil {
 		return err
 	}
-	projectPath, err := getProjectPath(ctx, c)
+
+	projectPath, err := getProjectPath(ctx)
+	fmt.Println(projectPath)
 	if err != nil {
 		return err
 	}
@@ -67,13 +68,15 @@ func run(ctx *cli.Context) error {
 		return err
 	}
 
+	editor := viper.GetString("editor")
+
 	if ctx.NumFlags() == 0 || (ctx.NumFlags() == 2 && ctx.Bool("latest")) {
 		if err = spawnProgram(os.Getenv("SHELL"), nil); err != nil {
 			return err
 		}
 	}
 	if ctx.Bool("open") {
-		if err = spawnProgram(c.Editor, []string{"."}); err != nil {
+		if err = spawnProgram(editor, []string{"."}); err != nil {
 			return err
 		}
 	} else if ctx.Bool("tmux") {
@@ -95,7 +98,8 @@ func getProjectName(projectPath string) string {
 	split := strings.Split(projectPath, "/")
 	return split[len(split)-1]
 }
-func getProjectPath(ctx *cli.Context, config *config.Config) (string, error) {
+
+func getProjectPath(ctx *cli.Context) (string, error) {
 	if ctx.Bool("latest") {
 		projectPath, err := tryGetLatestProject()
 		if err == nil && projectPath != "" {
@@ -103,7 +107,7 @@ func getProjectPath(ctx *cli.Context, config *config.Config) (string, error) {
 		}
 	}
 
-	ch := findProjects(config)
+	ch := findProjects()
 	projectPath, err := fzfProjectPath(ch)
 	if err != nil {
 		return "", err
@@ -129,12 +133,14 @@ func spawnProgram(executable string, args []string) error {
 	return cmd.Run()
 }
 
-func findProjects(config *config.Config) <-chan string {
+func findProjects() <-chan string {
 	g := new(errgroup.Group)
 	ch := make(chan string, 10)
 
-	for _, dir := range config.Dirs() {
-		pf := project.New(dir, config.Markers(), ch, g)
+	dirs := getDirs()
+	markers := viper.GetStringSlice("source.project_markers")
+	for _, dir := range dirs {
+		pf := project.New(dir, markers, ch, g)
 		g.Go(func(rootDir string) func() error {
 			return func() error {
 				return pf.Find()
@@ -183,7 +189,7 @@ func fzfProjectPath(ch <-chan string) (string, error) {
 }
 
 func tryGetLatestProject() (string, error) {
-	file, err := os.Open(fmt.Sprintf("%s/.config/cdp/latest", os.Getenv("HOME")))
+	file, err := os.Open(fmt.Sprintf("%s/.local/share/cdp_latest", os.Getenv("HOME")))
 	if err != nil {
 		return "", err
 	}
@@ -193,4 +199,28 @@ func tryGetLatestProject() (string, error) {
 		return "", err
 	}
 	return string(proj), nil
+}
+
+func getConfigFile() string {
+	if configPath := os.Getenv("CDPCONFIG"); configPath != "" {
+		return configPath
+	}
+	return fmt.Sprintf("%s/.config/cdp/config.yaml", os.Getenv("HOME"))
+}
+
+func initConfig() error {
+	viper.SetConfigType("yaml")
+	viper.SetConfigFile(getConfigFile())
+	return viper.ReadInConfig()
+}
+
+func getDirs() []string {
+	homeDir := os.Getenv("HOME")
+	var res []string
+
+	for _, dir := range viper.GetStringSlice("source.dirs") {
+		res = append(res, fmt.Sprintf("%s/%s", homeDir, dir))
+	}
+
+	return res
 }
