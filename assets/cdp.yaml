@@ -7,7 +7,7 @@ source:
     - Repos
   # Markers to identify the project root
   project_markers:
-    - .git/
-    - node_modules/
+    - .git
+    - node_modules
     - go.mod
 #
