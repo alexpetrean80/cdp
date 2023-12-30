@@ -8,19 +8,7 @@ import (
 )
 
 func runCmd(executable string, args ...string) error {
-}
-
-type Program interface {
-	Open() error
-}
-
-type program struct {
-	executable string
-	args       []string
-}
-
-func (p program) Open() error {
-	cmd := exec.Command(p.executable, p.args...)
+	cmd := exec.Command(executable, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -34,11 +22,6 @@ func OpenShell() error {
 func OpenEditor() error {
 	editor := viper.GetString("editor")
 	return runCmd(editor, ".")
-}
-
-func OpenMultiplexer() error {
-	mux := viper.GetString("multiplexer")
-	return runCmd(mux)
 }
 
 func OpenGithubPage() error {
