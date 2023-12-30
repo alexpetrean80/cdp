@@ -1,15 +1,19 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/alexpetrean80/cdp/lib"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
 	last    bool
+	cfgFile string
+
 	rootCmd = &cobra.Command{
 		Use: "cdp",
 		//	Short: "A brief description of your application",
@@ -39,5 +43,17 @@ func Execute() {
 }
 
 func init() {
+	cobra.OnInitialize(initConfig)
+
 	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.config/cdp/config.yaml")
+}
+
+func initConfig() {
+	if cfgFile == "" {
+		cfgFile = fmt.Sprintf("%s/.config/cdp/config.yaml", os.Getenv("HOME"))
+	}
+
+	viper.SetConfigFile(cfgFile)
+
 }
