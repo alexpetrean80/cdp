@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"log"
-	"os"
 
 	"github.com/alexpetrean80/cdp/lib"
 	"github.com/spf13/cobra"
@@ -22,22 +21,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		last, err := cmd.Flags().GetBool("last")
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		projectPath, err := lib.GetProjectPath(last)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		err = os.Chdir(projectPath)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		if err := lib.SpawnProgram(os.Getenv("SHELL"), nil); err != nil {
+		if err := lib.SpawnShell(); err != nil {
 			log.Fatal(err.Error())
 		}
 	},
