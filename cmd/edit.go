@@ -4,8 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"log"
-
 	"github.com/alexpetrean80/cdp/lib"
 	"github.com/spf13/cobra"
 )
@@ -20,10 +18,8 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := lib.SpawnEditor(); err != nil {
-			log.Fatal(err.Error())
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return lib.OpenEditor()
 	},
 }
 

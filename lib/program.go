@@ -7,26 +7,40 @@ import (
 	"github.com/spf13/viper"
 )
 
-func spawnProgram(executable string, args []string) error {
-	cmd := exec.Command(executable, args...)
+func runCmd(executable string, args ...string) error {
+}
+
+type Program interface {
+	Open() error
+}
+
+type program struct {
+	executable string
+	args       []string
+}
+
+func (p program) Open() error {
+	cmd := exec.Command(p.executable, p.args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }
 
-func SpawnShell() error {
-	return spawnProgram(os.Getenv("SHELL"), nil)
+func OpenShell() error {
+	return runCmd(os.Getenv("SHELL"))
 }
 
-func SpawnEditor() error {
+func OpenEditor() error {
 	editor := viper.GetString("editor")
-
-	return spawnProgram(editor, []string{"."})
-
+	return runCmd(editor, ".")
 }
 
-func SpawnMux() error {
+func OpenMultiplexer() error {
 	mux := viper.GetString("multiplexer")
-	return spawnProgram(mux, nil)
+	return runCmd(mux)
+}
+
+func OpenGithubPage() error {
+	return runCmd("gh", "browse")
 }

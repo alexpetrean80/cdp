@@ -9,12 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// func getProjectName(projectPath string) string {
-// 	split := strings.Split(projectPath, "/")
-// 	return split[len(split)-1]
-// }
-
-func GetDirs() ([]string, error) {
+func GetFullPathOfDirs() ([]string, error) {
 	homeDir, err := homedir.Dir()
 	if err != nil {
 		return nil, err

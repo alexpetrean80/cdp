@@ -1,4 +1,4 @@
-package project
+package finder
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ type Finder struct {
 	Group   *errgroup.Group
 }
 
-func NewFinder(rootDir string, markers []string, resCh chan string, g *errgroup.Group) *Finder {
+func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group) *Finder {
 	pf := Finder{}
 	pf.RootDir = rootDir
 

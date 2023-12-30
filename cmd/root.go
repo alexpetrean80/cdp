@@ -21,7 +21,6 @@ var (
 		// This application is a tool to generate the needed files
 		// to quickly create a Cobra application.`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
 			if err := lib.ChangeDirectory(last); err != nil {
 				log.Fatal(err.Error())
 			}
@@ -33,8 +32,6 @@ var (
 	}
 )
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -43,5 +40,4 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
-
 }
