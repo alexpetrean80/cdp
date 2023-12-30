@@ -8,8 +8,8 @@ deps:
 
 # install golangci-lint
 install_tools:
-	@echo "installing golangci-lint"
-	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+	@echo "installing cobra-cli"
+	@go install github.com/spf13/cobra-cli@latest
 
 lint:
 	@echo "linting golang code"
@@ -18,7 +18,10 @@ lint:
 # build executable from cmd/main.go
 build:
 	@echo "building executable"
-	@go build -o bin/$(APP_NAME) cmd/main.go
+	@go build -o bin/$(APP_NAME) main.go
+
+run:
+	@go run main.go
 
 test:
 	@echo "running tests"
