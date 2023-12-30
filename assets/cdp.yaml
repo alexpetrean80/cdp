@@ -1,5 +1,6 @@
 # editor to use when opening a project with the -e flag
 editor: nvim
+multiplexer: tmux
 
 source:
   # Directories containing the project in your HOME
