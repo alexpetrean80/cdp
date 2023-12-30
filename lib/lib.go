@@ -5,8 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
-	"strings"
 	"sync"
 
 	"github.com/alexpetrean80/cdp/project"
@@ -16,29 +14,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func GetProjectName(projectPath string) string {
-	split := strings.Split(projectPath, "/")
-	return split[len(split)-1]
-}
-
-func writeLastProjectToFile(projectPath string) error {
-	file, err := os.Create(fmt.Sprintf("%s/.local/share/cdp_last", os.Getenv("HOME")))
-	if err != nil {
-		return err
-	}
-
-	_, err = file.WriteString(projectPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+// func getProjectName(projectPath string) string {
+// 	split := strings.Split(projectPath, "/")
+// 	return split[len(split)-1]
+// }
 
 func GetProjectPath(last bool) (string, error) {
+  log.Println(last)
 	if last {
-		if projectPath, err := TryGetLatestProject(); err == nil && projectPath != "" {
-			fmt.Println("Here")
+		projectPath, err := TryGetLatestProject()
+		log.Println(projectPath)
+		if err == nil && projectPath != "" {
 			return projectPath, nil
 		}
 	}
@@ -54,14 +40,6 @@ func GetProjectPath(last bool) (string, error) {
 	}
 
 	return projectPath, nil
-}
-
-func SpawnProgram(executable string, args []string) error {
-	cmd := exec.Command(executable, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func FindProjects() <-chan string {
@@ -147,4 +125,27 @@ func GetDirs() ([]string, error) {
 	}
 
 	return res, nil
+}
+
+func writeLastProjectToFile(projectPath string) error {
+	file, err := os.Create(fmt.Sprintf("%s/.local/share/cdp_last", os.Getenv("HOME")))
+	if err != nil {
+		return err
+	}
+
+	_, err = file.WriteString(projectPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ChangeDirectory(last bool) error {
+	projectPath, err := GetProjectPath(last)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return os.Chdir(projectPath)
 }
