@@ -17,21 +17,14 @@ var (
 	mux    executable.Program
 	muxCmd = &cobra.Command{
 		Use:   "mux",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		Short: "Open project in a mux session",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			execName := viper.GetString("multiplexer")
-			fmt.Println(execName)
-			if i := slices.Index([]string{"tmux", "screen", "zellij"}, execName); i == -1 {
-				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij", execName)
+			muxExecPath := viper.GetString("multiplexer")
+			if i := slices.Index([]string{"tmux", "screen", "zellij"}, muxExecPath); i == -1 {
+				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij", muxExecPath)
 			}
 
-			mux = executable.New(execName, args...)
+			mux = executable.New(muxExecPath, args...)
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {

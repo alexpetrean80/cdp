@@ -16,7 +16,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use: "cdp",
-		//	Short: "A brief description of your application",
+		// Short: "Select from all your projects ",
 		//	Long: `A longer description that spans multiple lines and likely contains
 		//
 		// examples and usage of using your application. For example:
@@ -51,9 +51,18 @@ func init() {
 
 func initConfig() {
 	if cfgFile == "" {
-		cfgFile = fmt.Sprintf("%s/.config/cdp/config.yaml", os.Getenv("HOME"))
+		if cp := os.Getenv("CDPCONFIG"); cp != "" {
+			cfgFile = cp
+		} else {
+			cfgFile = fmt.Sprintf("%s/.config/cdp/config.yaml", os.Getenv("HOME"))
+		}
 	}
 
 	viper.SetConfigFile(cfgFile)
+	viper.SetConfigType("yaml")
 
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatal(err.Error())
+	}
 }
