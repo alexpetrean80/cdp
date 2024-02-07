@@ -24,12 +24,9 @@ var (
 		// Cobra is a CLI library for Go that empowers applications.
 		// This application is a tool to generate the needed files
 		// to quickly create a Cobra application.`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			editorExecPath := viper.GetString("editor")
 			editor = executable.New(editorExecPath, append(args, ".")...)
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
 			return editor.Open()
 		},
 	}

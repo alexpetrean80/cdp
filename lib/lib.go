@@ -65,7 +65,6 @@ func WriteLastProject(projectPath string) error {
 }
 
 func GetProjectPath(last bool) (string, error) {
-	log.Println(last)
 	if last {
 		projectPath, err := ReadLastProject()
 		log.Println(projectPath)

@@ -18,16 +18,13 @@ var (
 	muxCmd = &cobra.Command{
 		Use:   "mux",
 		Short: "Open project in a mux session",
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			muxExecPath := viper.GetString("multiplexer")
 			if i := slices.Index([]string{"tmux", "screen", "zellij"}, muxExecPath); i == -1 {
-				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij", muxExecPath)
+				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij, muxExecPath", muxExecPath)
 			}
 
 			mux = executable.New(muxExecPath, args...)
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
 			return mux.Open()
 		},
 	}

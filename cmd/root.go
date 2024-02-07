@@ -43,13 +43,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.config/cdp/config.yaml")
-}
-
-func initConfig() {
 	if cfgFile == "" {
 		if cp := os.Getenv("CDPCONFIG"); cp != "" {
 			cfgFile = cp
@@ -65,4 +58,8 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal(err.Error())
 	}
+
+	last = false
+	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.config/cdp/config.yaml")
 }

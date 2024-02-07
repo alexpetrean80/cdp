@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/alexpetrean80/cdp/executable"
 	"github.com/spf13/cobra"
@@ -25,20 +26,19 @@ var (
 		// Cobra is a CLI library for Go that empowers applications.
 		// This application is a tool to generate the needed files
 		// to quickly create a Cobra application.`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if shellExecPath == "" {
-				shellExecPath = os.Getenv("SHELL")
+				s := strings.Split(os.Getenv("SHELL"), "/")
+				slices.Reverse(s)
+				shellExecPath = s[0]
 			}
 
-			if i := slices.Index([]string{"bash", "sh", "zsh", "fish"}); i == -1 {
-				return fmt.Errorf("%s is not a supported shell. valid options are sh, bash, zsh and fish")
+			if i := slices.Index([]string{"bash", "sh", "zsh", "fish"}, shellExecPath); i == -1 {
+				return fmt.Errorf("%s is not a supported shell. valid options are sh, bash, zsh and fish", shellExecPath)
 			}
 
 			shell = executable.New(shellExecPath, args...)
 
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
 			return shell.Open()
 		},
 	}
@@ -46,5 +46,5 @@ var (
 
 func init() {
 	rootCmd.AddCommand(shellCmd)
-	muxCmd.Flags().StringVarP(&shellExecPath, "shell", "s", "", "shell to be opened (defaults to $SHELL)")
+	shellCmd.Flags().StringVarP(&shellExecPath, "shell", "s", "", "shell to be opened (defaults to $SHELL)")
 }
