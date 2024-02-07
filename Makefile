@@ -33,5 +33,5 @@ cleanup:
 
 install:
 	@make build
-	@sudo cp ./bin/$(APP_NAME) /usr/local/bin/$(APP_NAME)
+	@sudo cp -f ./bin/$(APP_NAME) /usr/local/bin/$(APP_NAME)
 	@make cleanup
