@@ -1,4 +1,4 @@
-package project
+package finder
 
 import (
 	"fmt"
@@ -44,7 +44,7 @@ func (pf Finder) findRec(rootDir string) error {
 	for _, entry := range entries {
 		entryName := strings.Trim(entry.Name(), "/")
 
-    if _, ok := pf.Markers[entryName]; ok {
+		if _, ok := pf.Markers[entryName]; ok {
 			pf.ResCh <- rootDir
 			return nil
 		}

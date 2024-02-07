@@ -31,6 +31,6 @@ GLOBAL OPTIONS:
    --edit, -e     Open the project in the configured editor. (mutually exclusive with -t) (default: false)
    --browser, -b  Open the project in the browser. github-cli required (default: false)
    --latest, -l   Open the latest project (default: false)
-   --tmux, -t     Open the project in a new tmux session. (mutually exclusive with -o) tmux required. (default: false)
+   --tmux, -t     Open the project in a new tmux session. (mutually exclusive with -e) tmux required. (default: false)
    --help, -h     show help
 ```
