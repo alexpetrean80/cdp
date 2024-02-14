@@ -96,6 +96,9 @@ func FindProjects() <-chan string {
 	}
 	markers := viper.GetStringSlice("source.project_markers")
 	for _, dir := range dirs {
+		if !isDirectory(dir) {
+			break
+		}
 		pf := finder.New(dir, markers, ch, g)
 		g.Go(func(rootDir string) func() error {
 			return func() error {
@@ -113,6 +116,19 @@ func FindProjects() <-chan string {
 	}()
 
 	return ch
+}
+
+func isDirectory(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if !fileInfo.Mode().IsDir() {
+		fmt.Printf("%s is not a directory, please check your config.\n", path)
+		return false
+	}
+
+	return true
 }
 
 func FzfPath(ch <-chan string) (string, error) {

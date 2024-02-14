@@ -6,12 +6,25 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/alexpetrean80/cdp/executable"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+func getSessionName() string {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+	dir := strings.Split(pwd, "/")
+	slices.Reverse(dir)
+
+	return dir[0]
+}
 
 var (
 	mux    executable.Program
@@ -24,6 +37,9 @@ var (
 				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij, muxExecPath", muxExecPath)
 			}
 
+			sessionName := getSessionName()
+			args = append(args, "new")
+			args = append(args, fmt.Sprintf("-s %s", sessionName))
 			mux = executable.New(muxExecPath, args...)
 			return mux.Open()
 		},
