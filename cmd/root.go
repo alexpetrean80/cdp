@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/alexpetrean80/cdp/lib"
 	"github.com/spf13/cobra"
@@ -17,7 +18,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use: "cdp",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if cmd.Use == "last" {
+			if slices.Contains([]string{"last", "completion"}, cmd.Use) {
 				return nil
 			}
 			return lib.ChangeDirectory(last)
