@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -18,14 +15,8 @@ var (
 	shellExecPath string
 	shell         executable.Program
 	shellCmd      = &cobra.Command{
-		Use: "shell",
-		// 	Short: "A brief description of your command",
-		// 	Long: `A longer description that spans multiple lines and likely contains examples
-		// and usage of using your command. For example:
-		//
-		// Cobra is a CLI library for Go that empowers applications.
-		// This application is a tool to generate the needed files
-		// to quickly create a Cobra application.`,
+		Use:   "shell",
+		Short: "Open a shell in the project's directory.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if shellExecPath == "" {
 				s := strings.Split(os.Getenv("SHELL"), "/")
