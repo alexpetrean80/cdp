@@ -1,5 +1,3 @@
-# Warning: Extremely early in development
-
 # What it is?
 
 Are you a terminal loving dev/dev-ops/SRE/whatever who hates `cd`-ing all day through multiple projects? Are you constantly pissed that your company decided service orientation was a good thing? Fear not!
@@ -12,25 +10,27 @@ CDP(CD Project, no connection with the creators of The Witcher even though I'm a
 
 1. Clone the repository.
 2. Either:
-   a. Run `sudo make install`, which will build and move the executable to `/usr/local/bin/cdp` (requires sudo and a Unix-like OS).
+   a. Run `make install`, which will build and move the executable to `/usr/local/bin/cdp` (requires sudo and a Unix-like OS).
    b. Use the golang toolchain to build the executable: `go build -o <whatever> cmd/main.go` and do something with it (Might work on Windows, not tested).
 
 ## Usage
 
 ```man
-NAME:
-   cdp - Move between projects seamlessly
+Usage:
+  cdp [command]
 
-USAGE:
-   cdp [global options] command [command options] [arguments...]
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  edit        Open project in the editor.
+  help        Help about any command
+  last        Show the last project opened with cdp.
+  mux         Open project in a mux session
+  shell       Open a shell in the project's directory.
 
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
+Flags:
+      --config string   config file (default is $HOME/.config/cdp/config.yaml (default "c")
+  -h, --help            help for cdp
+  -l, --last            Change to the last project.
 
-GLOBAL OPTIONS:
-   --edit, -e     Open the project in the configured editor. (mutually exclusive with -t) (default: false)
-   --browser, -b  Open the project in the browser. github-cli required (default: false)
-   --latest, -l   Open the latest project (default: false)
-   --tmux, -t     Open the project in a new tmux session. (mutually exclusive with -e) tmux required. (default: false)
-   --help, -h     show help
+Use "cdp [command] --help" for more information about a command.
 ```
