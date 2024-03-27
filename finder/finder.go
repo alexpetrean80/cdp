@@ -31,11 +31,11 @@ func New(rootDir string, markers []string, resCh chan string, g *errgroup.Group)
 	return &pf
 }
 
-func (pf Finder) Find() error {
-	return pf.findRec(pf.RootDir)
+func (pf Finder) Find(name string) error {
+	return pf.findRec(pf.RootDir, name)
 }
 
-func (pf Finder) findRec(rootDir string) error {
+func (pf Finder) findRec(rootDir, name string) error {
 	entries, err := os.ReadDir(rootDir)
 	if err != nil {
 		return err
@@ -45,13 +45,18 @@ func (pf Finder) findRec(rootDir string) error {
 		entryName := strings.Trim(entry.Name(), "/")
 
 		if _, ok := pf.Markers[entryName]; ok {
-			pf.ResCh <- rootDir
-			return nil
+
+			fmt.Println("dir:", rootDir)
+			fmt.Println("name:", name)
+			if strings.Contains(rootDir, name) {
+				pf.ResCh <- rootDir
+				return nil
+			}
 		}
 
 		if !isHiddenDir(entry) && entry.IsDir() {
 			pf.Group.Go(func() error {
-				return pf.findRec(fmt.Sprintf("%s/%s", rootDir, entryName))
+				return pf.findRec(fmt.Sprintf("%s/%s", rootDir, entryName), name)
 			})
 		}
 	}
