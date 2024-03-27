@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/alexpetrean80/cdp/finder"
 	"github.com/ktr0731/go-fuzzyfinder"
@@ -73,10 +72,30 @@ func GetProjectPath(name string, last bool) (string, error) {
 		}
 	}
 
-	ch := FindProjects()
-	projectPath, err := FzfPath(ch)
-	if err != nil {
-		return "", err
+	ch := FindProjects(name)
+
+	var projects []string
+
+	for proj := range ch {
+		projects = append(projects, proj)
+	}
+
+	var projectPath string
+	switch len(projects) {
+	case 0:
+		return "", fmt.Errorf("No project found.")
+	case 1:
+		projectPath = projects[0]
+	default:
+		projId, err := fuzzyfinder.Find(
+			projects,
+			func(i int) string {
+				return projects[i]
+			})
+		projectPath = projects[projId]
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if err := WriteLastProject(projectPath); err != nil {
@@ -86,7 +105,7 @@ func GetProjectPath(name string, last bool) (string, error) {
 	return projectPath, nil
 }
 
-func FindProjects() <-chan string {
+func FindProjects(name string) <-chan string {
 	g := new(errgroup.Group)
 	ch := make(chan string, 10)
 
@@ -99,10 +118,13 @@ func FindProjects() <-chan string {
 		if !isDirectory(dir) {
 			break
 		}
+		fmt.Println("dir:", dir)
+		fmt.Println("name:", name)
+
 		pf := finder.New(dir, markers, ch, g)
 		g.Go(func(rootDir string) func() error {
 			return func() error {
-				return pf.Find()
+				return pf.Find(name)
 			}
 		}(dir))
 	}
@@ -129,33 +151,4 @@ func isDirectory(path string) bool {
 	}
 
 	return true
-}
-
-func FzfPath(ch <-chan string) (string, error) {
-	mtx := new(sync.Mutex)
-	var projects []string
-	go func() {
-		for {
-			proj, ok := <-ch
-			if !ok {
-				break
-			}
-			mtx.Lock()
-			projects = append(projects, proj)
-			mtx.Unlock()
-		}
-	}()
-
-	projId, err := fuzzyfinder.Find(
-		&projects, func(i int) string {
-			return (projects)[i]
-		},
-		fuzzyfinder.WithHotReloadLock(mtx),
-	)
-
-	if err != nil {
-		return "", err
-	}
-
-	return (projects)[projId], nil
 }
