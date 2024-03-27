@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -45,10 +46,7 @@ func (pf Finder) findRec(rootDir, name string) error {
 		entryName := strings.Trim(entry.Name(), "/")
 
 		if _, ok := pf.Markers[entryName]; ok {
-
-			fmt.Println("dir:", rootDir)
-			fmt.Println("name:", name)
-			if strings.Contains(rootDir, name) {
+			if fuzzy.MatchNormalized(name, rootDir) {
 				pf.ResCh <- rootDir
 				return nil
 			}
