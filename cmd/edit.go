@@ -3,7 +3,7 @@ package cmd
 import (
 	"log"
 
-	"github.com/alexpetrean80/cdp/executable"
+	"github.com/alexpetrean80/cdp/lib/executable"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

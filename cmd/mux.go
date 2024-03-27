@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/alexpetrean80/cdp/executable"
+	"github.com/alexpetrean80/cdp/lib/executable"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,7 +31,10 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			muxExecPath := viper.GetString("multiplexer")
 			if i := slices.Index([]string{"tmux", "screen", "zellij"}, muxExecPath); i == -1 {
-				return fmt.Errorf("%s is not a supported multiplexer. valid options are tmux, screen and zellij, muxExecPath", muxExecPath)
+				return fmt.Errorf(
+					"%s is not a supported multiplexer. valid options are tmux, screen and zellij, muxExecPath",
+					muxExecPath,
+				)
 			}
 
 			sessionName := getSessionName()
@@ -45,7 +48,8 @@ var (
 
 func init() {
 	rootCmd.AddCommand(muxCmd)
-	muxCmd.Flags().StringP("executable", "e", "", "program to be executed (one of: tmux, screen, zellij)")
+	muxCmd.Flags().
+		StringP("executable", "e", "", "program to be executed (one of: tmux, screen, zellij)")
 	if err := viper.BindPFlag("multiplexer", muxCmd.Flags().Lookup("executable")); err != nil {
 		log.Fatal(err.Error())
 	}

@@ -14,6 +14,7 @@ import (
 var (
 	last    bool
 	cfgFile string
+	name    string
 
 	rootCmd = &cobra.Command{
 		Use: "cdp",
@@ -21,7 +22,7 @@ var (
 			if slices.Contains([]string{"last", "completion"}, cmd.Use) {
 				return nil
 			}
-			return lib.ChangeDirectory(last)
+			return lib.ChangeDirectory(name, last)
 		},
 	}
 )
@@ -51,5 +52,10 @@ func init() {
 
 	last = false
 	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.config/cdp/config.yaml")
+
+	rootCmd.PersistentFlags().
+		StringVarP(&name, "name", "n", "", "Specify a substring from a project name to be used in the search. Filtration is done fuzzily. If only one result is returned, it will bypass the fuzzyfinder entirely.")
+
+	rootCmd.PersistentFlags().
+		StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/cdp/config.yaml")
 }
