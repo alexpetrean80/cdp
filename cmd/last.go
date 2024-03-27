@@ -23,7 +23,7 @@ var lastCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(lastCmd)
 	lastCmd.SetHelpFunc(func(c *cobra.Command, s []string) {
-		hiddenFlags := []string{"last", "config"}
+		hiddenFlags := []string{"last", "config", "name"}
 		for _, f := range hiddenFlags {
 			err := c.Flags().MarkHidden(f)
 			if err != nil {

@@ -28,8 +28,8 @@ func GetFullPathOfDirs() ([]string, error) {
 	return res, nil
 }
 
-func ChangeDirectory(last bool) error {
-	projectPath, err := GetProjectPath(last)
+func ChangeDirectory(name string, last bool) error {
+	projectPath, err := GetProjectPath(name, last)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -64,7 +64,7 @@ func WriteLastProject(projectPath string) error {
 	return nil
 }
 
-func GetProjectPath(last bool) (string, error) {
+func GetProjectPath(name string, last bool) (string, error) {
 	if last {
 		projectPath, err := ReadLastProject()
 		log.Println(projectPath)
