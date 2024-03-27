@@ -54,8 +54,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&last, "last", "l", false, "Change to the last project.")
 
 	rootCmd.PersistentFlags().
-		StringVar(&name, "project name", "", "Specify the name of the project.")
+		StringVarP(&name, "name", "n", "", "Specify the name of the project.")
 
 	rootCmd.PersistentFlags().
-		StringVar(&cfgFile, "config", "c", "config file (default is $HOME/.config/cdp/config.yaml")
+		StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/cdp/config.yaml")
 }
